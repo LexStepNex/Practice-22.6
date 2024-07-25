@@ -2,6 +2,45 @@
 #include <map>
 #include <regex>  // добавлен чисто для контроля ввода
 #include <string>
+#include <vector>
+struct book {
+  std::map<std::string, std::string> surname_by_phone;
+  std::map<std::string, std::vector<std::string>> phone_by_surname;
+
+  void add(std::string phone, std::string surname) {
+    if (surname_by_phone.count(phone) == 0) {
+      surname_by_phone.insert({phone, surname});
+      phone_by_surname[surname].push_back(phone);
+      std::cout << "Phone number added successfully\n";
+    } else {
+      std::cout << "This phone number has already been provided before\n";
+    }
+  }
+
+  void find_by_phone(std::string phone) {
+    if (surname_by_phone.find(phone) != surname_by_phone.end()) {
+      std::cout << "Phone number: " << surname_by_phone.find(phone)->first
+                << " subscriber with surname: " << surname_by_phone[phone]
+                << "\n";
+    } else {
+      std::cout << "This phone number was not found\n";
+    }
+  }
+
+  void find_by_surname(std::string surname) {
+    if (phone_by_surname.find(surname) != phone_by_surname.end()) {
+      int amount_phones = phone_by_surname[surname].size();
+
+      std::cout << "Phone numbers found for the last name "
+                << phone_by_surname.find(surname)->first << ": \n";
+      for (int i = 0; i < amount_phones; i++) {
+        std::cout << phone_by_surname[surname][i] << "\n";
+      }
+    } else {
+      std::cout << "This surname was not found\n";
+    }
+  }
+};
 
 std::string lower_case(std::string str) {
   int sizeStr = str.size();
@@ -54,7 +93,7 @@ void request(std::string& phone, std::string& surname) {
 
 bool repeat() {
   std::string answer;
-  std::cout << "Do you want to continue working with the file?\n";
+  std::cout << "Do you want to continue working with the book?\n";
   do {
     std::cout << "Input \"yes\" or \"no\": ";
     std::cin >> answer;
@@ -67,28 +106,21 @@ bool repeat() {
     return false;
 }
 
-void find_surname(std::map<std::string, std::string> phone_book,
-                  std::string surname) {
-  int count = 0;
-  for (std::map<std::string, std::string>::iterator it = phone_book.begin();
-       it != phone_book.end(); it++) {
-    if (lower_case(it->second) == lower_case(surname)) {
-      count++;
-      if (count == 1) std::cout << "Phone numbers found for the last name Smith: \n";
-      std::cout << it->first << "\n";
-    }
-  }
-
-  if (count == 0) std::cout << "This surname was not found\n";
-}
-
 int main() {
-  std::map<std::string, std::string> phone_book;
-  phone_book["44-111"] = "Smit";
-  phone_book["44-11-22"] = "Holland";
-  phone_book.insert({"936-9992", "ss"});
-  phone_book.insert(
-      std::make_pair<std::string, std::string>("89635555551", "Holland"));
+  book phone_book;
+  /*
+    phone_book.phone_by_surname["44-111"] = "Smit";
+    phone_book.phone_by_surname["44-11-22"] = "Holland";
+    phone_book.phone_by_surname.insert({"936-9992", "ss"});
+    phone_book.phone_by_surname.insert(
+        std::make_pair<std::string, std::string>("89635555551", "Holland"));
+
+    phone_book.surname_by_phone["Smit"].pushback("44-111");
+  */
+  phone_book.add("44-111", "Smit");
+  phone_book.add("44-11-22", "Holland");
+  phone_book.add("936-9992", "Parker");
+  phone_book.add("89635555551", "Holland");
 
   std::string phone = "first", surname;
 
@@ -99,20 +131,11 @@ int main() {
       std::cout << "Invalid request entered. Try again\n";
       continue;
     } else if (!phone.empty() && !surname.empty()) {
-      if (phone_book.count(phone) == 0) {
-        phone_book[phone] = surname;
-        std::cout << "Phone and last name successfully added\n";
-      } else
-        std::cout << "This phone number has already been provided before\n";
+      phone_book.add(phone, surname);
     } else if (surname.empty()) {
-      if (phone_book.find(phone) != phone_book.end()) {
-        std::cout << "Phone number: " << phone_book.find(phone)->first
-                  << " subscriber with surname: " << phone_book[phone] << "\n";
-      } else {
-        std::cout << "This phone number was not found\n";
-      }
+      phone_book.find_by_phone(phone);
     } else {
-      find_surname(phone_book, surname);
+      phone_book.find_by_surname(surname);
     }
   } while (repeat());
 }
