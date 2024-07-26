@@ -28,7 +28,7 @@ int main() {
 
         continue;
       } else {
-        std::cout << "Operation not possible\n";
+        std::cout << "Operation not possible, queue is empty\n";
         continue;
       }
     } else {
@@ -36,4 +36,4 @@ int main() {
       i++;
     }
   }
-}
+}   
